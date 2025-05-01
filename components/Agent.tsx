@@ -68,16 +68,23 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
 
     try {
       if (type === "generate") {
-        console.log("Workflow ID:", process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID);
         await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
           variableValues: {
             username: userName,
             userid: userId,
           },
         });
+        onError: (error: Error) => {
+          console.error("VAPI Error:", error);
+        };
       }
-    } catch (error) {
-      console.log("Error handle call: ", error);
+    } catch (error: any) {
+      console.error("Detailed error:", {
+        message: error.message,
+        response: error.response,
+        status: error.status,
+      });
+      setCallStatus(CallStatus.INACTIVE);
     }
   };
 
@@ -139,7 +146,7 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
 
       <div className="w-full flex justify-center">
         {callStatus !== "ACTIVE" ? (
-          <button className="relative btn-call" onClick={handleCall}>
+          <button className="relative btn-call" onClick={() => handleCall()}>
             <span
               className={cn(
                 "absolute animate-ping rounded-full opacity-75",
@@ -149,7 +156,7 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
             <span>{isCallInactiveOrFinished ? "Call" : ". . . "}</span>
           </button>
         ) : (
-          <button className="btn-disconnect" onClick={handleDisconnect}>
+          <button className="btn-disconnect" onClick={() => handleDisconnect()}>
             End
           </button>
         )}
