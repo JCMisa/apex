@@ -49,6 +49,7 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
     vapi.on("speech-end", onSpeechEnd);
     vapi.on("error", onError);
 
+    // for cleaning useEffect
     return () => {
       vapi.off("call-start", onCallStart);
       vapi.off("call-end", onCallEnd);
@@ -63,17 +64,23 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
     if (callStatus === CallStatus.FINISHED) router.push("/");
   }, [messages, callStatus, type, userId]);
 
+  // PART 2: handleCall will be triggered
   const handleCall = async () => {
+    // set the call status to connecting
     setCallStatus(CallStatus.CONNECTING);
 
     try {
       if (type === "generate") {
+        // access the workflow and start vapi to talk
         await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
           variableValues: {
             username: userName,
-            userid: userId,
+            userid: userId, // pass userId from props
           },
         });
+        // this will now automatically pass the user answer through voice to the api route connected in the vapi workflow configuration
+        // the website must be deployed before configuring the workflow api endpoint
+
         onError: (error: Error) => {
           console.error("VAPI Error:", error);
         };
@@ -146,6 +153,7 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
 
       <div className="w-full flex justify-center">
         {callStatus !== "ACTIVE" ? (
+          // PART 1: click the button to trigger handleCall
           <button className="relative btn-call" onClick={() => handleCall()}>
             <span
               className={cn(

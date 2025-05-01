@@ -14,9 +14,11 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  // from the voice agent, get the user answers for type, role, level, texhstack, amount, and userid from props in Agent.tsx
   const { type, role, level, techstack, amount, userid } = await request.json();
 
   try {
+    // use vercel ai, generate a question text using the model configured
     const { text: questions } = await generateText({
       model: google("gemini-2.0-flash-001"),
       prompt: `Prepare questions for a job interview.
@@ -46,6 +48,7 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
     };
 
+    // after question was generated, add the data to the firestore database interview table
     await db.collection("interviews").add(interview);
 
     return Response.json({ success: true }, { status: 200 });
