@@ -38,7 +38,7 @@ const YourInterviewPage = async ({ params }: RouteParams) => {
       </div>
 
       <Agent
-        userName={user?.name as string}
+        userName={user?.name || ""}
         userId={user?.id}
         interviewId={id}
         type="interview"
