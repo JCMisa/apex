@@ -122,3 +122,31 @@ export async function getFeedbackByInterviewId(
   const feedbackDoc = querySnapshot.docs[0];
   return { id: feedbackDoc.id, ...feedbackDoc.data() } as Feedback;
 }
+
+export async function deleteInterview(interviewId: string) {
+  try {
+    // Delete feedback documents
+    const feedbackSnapshot = await db
+      .collection("feedback")
+      .where("interviewId", "==", interviewId)
+      .get();
+
+    const feedbackDeletions = feedbackSnapshot.docs.map((doc) =>
+      doc.ref.delete()
+    );
+
+    // Delete interview document
+    const interviewDeletion = db
+      .collection("interviews")
+      .doc(interviewId)
+      .delete();
+
+    // Execute all deletions in parallel
+    await Promise.all([...feedbackDeletions, interviewDeletion]);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting interview:", error);
+    return { success: false };
+  }
+}

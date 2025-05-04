@@ -4,7 +4,11 @@ import Image from "next/image";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import DisplayTechIcons from "./DisplayTechIcons";
-import { getFeedbackByInterviewId } from "@/lib/actions/general.action";
+import {
+  deleteInterview,
+  getFeedbackByInterviewId,
+} from "@/lib/actions/general.action";
+import { getCurrentUser } from "@/lib/actions/auth.action";
 
 const InterviewCard = async ({
   id,
@@ -14,6 +18,8 @@ const InterviewCard = async ({
   techstack,
   createdAt,
 }: InterviewCardProps) => {
+  const user = await getCurrentUser();
+
   const feedback =
     userId && id ? await getFeedbackByInterviewId({ interviewId: id }) : null;
   const normalizedType = /mix/gi.test(type) ? "Mixed" : type;
@@ -21,19 +27,38 @@ const InterviewCard = async ({
     feedback?.createdAt || createdAt || Date.now()
   ).format("MMM D, YYYY");
 
+  // const handleDeleteInterview = async () => {
+  //   const result = await deleteInterview(id || "");
+  //   if (result.success) {
+  //     toast.success("Interview deleted successfully");
+  //   }
+  //   toast.error("Failed to delete interview");
+  // };
+
   return (
     <div className="card-border w-[360px] max-sm:w-full min-h-96">
       <div className="card-interview">
         <div>
-          <div className="absolute top-0 right-0 w-fit px-4 py-2 rounded-bl-lg bg-light-600">
-            <p className="badge-text">{normalizedType}</p>
+          <div className="absolute top-0 left-0 w-fit px-4 py-2 rounded-br-lg bg-light-600 min-w-26 max-w-26">
+            <p className="badge-text text-center">{normalizedType}</p>
           </div>
+          {user?.id === userId && (
+            <div
+              className="absolute top-0 right-0 w-fit px-4 py-2 rounded-bl-lg bg-red-500 min-w-26 max-w-26 cursor-pointer"
+              onClick={async () => {
+                "use server";
+                await deleteInterview(id || "");
+              }}
+            >
+              <p className="badge-text text-center">Delete</p>
+            </div>
+          )}
           <Image
             src={getRandomInterviewCover()}
             alt="cover"
             width={90}
             height={90}
-            className="rounded-full object-fit size-[90px]"
+            className="rounded-full object-fit size-[90px] mt-5"
           />
           <h3 className="mt-5 capitalize">{role} Interview</h3>
 
